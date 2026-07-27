@@ -188,20 +188,27 @@ def conclusions():
                 'data_scope': 'synthetic_fixture_comparison'
             })
             
-        edge = rows("""
-            SELECT count() failed, sum(x_coord IN (0,9) OR y_coord IN (0,9)) edge_failed 
-            FROM devices FINAL WHERE wafer_id={w:String} AND passed=0 AND is_final_attempt=1
-        """, {'w':wid})[0]
-        if edge['failed'] > 0 and (edge['edge_failed']/edge['failed']) >= 0.5:
+        # Determine the edge from this wafer's coordinate bounds. A CSV or tester
+        # may use any coordinate range, so 0..9 must never be assumed here.
+        die_points = rows("SELECT x_coord, y_coord, passed FROM devices FINAL WHERE wafer_id={w:String} AND is_final_attempt=1", {'w':wid})
+        failed_points = [d for d in die_points if not d['passed']]
+        if die_points and failed_points:
+            xs = [d['x_coord'] for d in die_points]; ys = [d['y_coord'] for d in die_points]
+            min_x, max_x, min_y, max_y = min(xs), max(xs), min(ys), max(ys)
+            edge_failed = sum(1 for d in failed_points if d['x_coord'] in (min_x, max_x) or d['y_coord'] in (min_y, max_y))
+            edge_share = edge_failed * 100 / len(failed_points)
+        else:
+            edge_share = 0
+        if failed_points and edge_share >= 50:
             results.append({
                 'severity': 'warning', 'category': 'spatial', 'title': 'Edge-Dominant Failure Pattern',
                 'message': f"Evidence suggests edge-dominant failures on wafer {wid}.",
-                'evidence': f"{round(edge['edge_failed']*100/edge['failed'],1)}% of failures are on wafer edge.",
+                'evidence': f"{round(edge_share,1)}% of failures are on wafer edge.",
                 'affected_lot': lot, 'affected_wafer': wid,
                 'recommended_action': "Candidate investigation area: check processing tool uniformity.",
-                'data_scope': 'synthetic_fixture_comparison'
+                'data_scope': 'uploaded_dataset'
             })
-            
+
         tests = rows("""
             SELECT t.test_name, count() observations, sum(t.passed=0) failures, round(sum(t.passed=0)*100/count(),2) failure_rate 
             FROM test_results t INNER JOIN devices d USING (device_id, wafer_id)

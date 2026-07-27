@@ -67,9 +67,9 @@ export default function DataQuality() {
                 <th>Format</th>
                 <th>Parser / Mapping</th>
                 <th>SHA-256</th>
-                <th>Records</th>
-                <th>Errors</th>
-                <th>Received At</th>
+                <th style={{ minWidth: '74px' }}>Records</th>
+                <th style={{ minWidth: '110px' }}>Validation Errors</th>
+                <th style={{ minWidth: '150px' }}>Received At</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -82,7 +82,7 @@ export default function DataQuality() {
                   <td>{f.parser_version} / {f.mapping_version}</td>
                   <td title={f.sha256} style={{ fontFamily: 'DM Mono', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.sha256}</td>
                   <td>{f.records_parsed.toLocaleString()}</td>
-                  <td className={f.error_count > 0 ? 'bad' : 'ok'}>{f.error_count}</td>
+                  <td className={f.error_count > 0 ? 'bad' : 'ok'}>{f.error_count} {f.error_count === 0 ? '(none)' : ''}</td>
                   <td>{new Date(f.received_at).toLocaleString()}</td>
                   <td>
                     <button className="ghost" style={{ padding: '4px 8px', fontSize: '11px' }} onClick={() => selectFile(f)}>Inspect</button>

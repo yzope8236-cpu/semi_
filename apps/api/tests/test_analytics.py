@@ -76,8 +76,12 @@ def test_conclusions_logic(monkeypatch):
         query = query.lower()
         if "group by wafer_id, lot_id" in query:
             return [{'wafer_id': 'W1', 'lot_id': 'L1', 'devices': 100, 'yield_pct': 85.0}]
-        if "edge_failed" in query:
-            return [{'failed': 10, 'edge_failed': 8}]
+        if "select x_coord, y_coord, passed" in query:
+            return [
+                {'x_coord': 0, 'y_coord': 0, 'passed': 0},
+                {'x_coord': 9, 'y_coord': 0, 'passed': 0},
+                {'x_coord': 5, 'y_coord': 5, 'passed': 1},
+            ]
         if "select t.test_name, count() observations" in query:
             return [
                 {'test_name': 'IDDQ', 'observations': 100, 'failures': 20, 'failure_rate': 20.0},

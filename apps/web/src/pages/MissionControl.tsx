@@ -68,7 +68,7 @@ export default function MissionControl({ setPage, setWaferId }: Props) {
     <>
       <section className="hero panel">
         <div>
-          <p className="eyebrow">LIVE PRODUCTION HEALTH</p>
+          <p className="eyebrow">WAFERLENS / LIVE PRODUCTION HEALTH</p>
           <h2>Yield is {Math.max(0, 95 - k.yield_pct).toFixed(2)}% below target</h2>
           <p>
             {conclusions.length > 0 ? `Evidence suggests ${conclusions.length} investigation areas across the fleet.` : 'Fleet is currently operating within expected parameters.'} Investigate critical wafers before release.
@@ -114,7 +114,7 @@ export default function MissionControl({ setPage, setWaferId }: Props) {
                       Math.min(...overview.trend.map(t => t.yield_pct))
                     ],
                     type: 'bar',
-                    marker: { color: ['#4aedc4', '#ff6b6b'] }
+                    marker: { color: ['#27856f', '#c5574c'] }
                   }
                 ]}
                 layout={{
@@ -137,7 +137,7 @@ export default function MissionControl({ setPage, setWaferId }: Props) {
             {conclusions.slice(0, 5).map((c, i) => (
               <div key={i} className={`alert ${c.severity === 'critical' ? 'critical' : c.severity}`} style={{ borderLeft: `3px solid ${c.severity === 'critical' ? '#ff6b6b' : c.severity === 'warning' ? '#f5a623' : '#4aedc4'}`, paddingLeft: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <strong style={{ color: '#fff' }}>{c.title}</strong>
+                  <strong style={{ color: 'var(--espresso)' }}>{c.title}</strong>
                   <small style={{ color: '#92a2bb', textTransform: 'uppercase' }}>{c.category}</small>
                 </div>
                 <p style={{ margin: '5px 0' }}>{c.message} <br/><span style={{ color: '#92a2bb' }}>{c.evidence}</span></p>

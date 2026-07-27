@@ -21,8 +21,8 @@ export function Sidebar({ page, setPage }: SidebarProps) {
     <aside>
       <div className="brand">
         <span className="chip">◇</span>
-        <b>YieldScope</b>
-        <small>SEMICONDUCTOR INTELLIGENCE</small>
+        <b>WaferLens</b>
+        <small>SEMICONDUCTOR YIELD INTELLIGENCE</small>
       </div>
       <nav>
         {nav.map(x => (
@@ -37,8 +37,8 @@ export function Sidebar({ page, setPage }: SidebarProps) {
         ))}
       </nav>
       <div className="pipeline">
-        <span>● Pipeline Operational</span>
-        <small>✓ ClickHouse &nbsp; ✓ FastAPI &nbsp; ✓ Spring</small>
+        <span>● Intelligence Pipeline Online</span>
+        <small>Ingestion · Validation · Analytics</small>
       </div>
     </aside>
   );

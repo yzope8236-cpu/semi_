@@ -18,6 +18,7 @@ app.include_router(analytics_router)
 def startup_event():
     try:
         client().query("ALTER TABLE devices ADD COLUMN IF NOT EXISTS is_final_attempt UInt8 DEFAULT 1")
+        client().query("ALTER TABLE test_results ADD COLUMN IF NOT EXISTS original_unit String DEFAULT ''")
     except Exception:
         pass
 

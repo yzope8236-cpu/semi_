@@ -51,50 +51,57 @@ export default function WaferExplorer({ initialWaferId, setPage }: Props) {
 
   useEffect(() => {
     if (!selectedWaferId) return;
+    let cancelled = false;
+
+    const fetchJson = async (path: string) => {
+      const response = await fetch(`${API_BASE}${path}`);
+      if (!response.ok) throw { message: await response.text(), url: response.url };
+      return response.json();
+    };
 
     const fetchWaferData = async () => {
       setSelectedDie(undefined);
       setTestResults([]);
       setFetchError(null);
+      // Spatial-map data is the essential view. Optional analytics must never
+      // blank a valid map when a secondary endpoint is unavailable.
       try {
-        const [mapRes, spatialRes, testsRes, sumRes, sitesRes, retestsRes, conclusionsRes] = await Promise.all([
-          fetch(`${API_BASE}/v1/wafers/${selectedWaferId}/map`),
-          fetch(`${API_BASE}/v1/analytics/spatial/${selectedWaferId}`),
-          fetch(`${API_BASE}/v1/analytics/wafers/${selectedWaferId}/tests`),
-          fetch(`${API_BASE}/v1/analytics/wafers/${selectedWaferId}/summary`),
-          fetch(`${API_BASE}/v1/analytics/wafers/${selectedWaferId}/sites`),
-          fetch(`${API_BASE}/v1/analytics/wafers/${selectedWaferId}/retests`),
-          fetch(`${API_BASE}/v1/analytics/conclusions`)
+        const [mapResponse, spatialResponse] = await Promise.all([
+          fetchJson(`/v1/wafers/${selectedWaferId}/map`),
+          fetchJson(`/v1/analytics/spatial/${selectedWaferId}`)
         ]);
-
-        if (!mapRes.ok) throw { message: await mapRes.text(), url: mapRes.url };
-        if (!spatialRes.ok) throw { message: await spatialRes.text(), url: spatialRes.url };
-        if (!testsRes.ok) throw { message: await testsRes.text(), url: testsRes.url };
-
-        const mapResponse = await mapRes.json();
-        const spatialResponse = await spatialRes.json();
-        const testResponse = await testsRes.json();
-        
-        console.log("Wafer map response", mapResponse);
-        console.log("Spatial response", spatialResponse);
-        
-        setDies(mapResponse.dies);
+        if (cancelled) return;
+        setDies(mapResponse.dies ?? []);
         setSpatial(spatialResponse);
-        setTests(testResponse);
-
-        if (sumRes.ok) setSummary(await sumRes.json());
-        if (sitesRes.ok) setSites(await sitesRes.json());
-        if (retestsRes.ok) setRetests(await retestsRes.json());
-        if (conclusionsRes.ok) {
-          const c = await conclusionsRes.json();
-          setConclusions(c.filter((x: any) => x.affected_wafer === selectedWaferId));
-        }
       } catch (e: any) {
-        setFetchError({ message: e.message || 'Unknown error', url: e.url || 'API' });
+        if (!cancelled) {
+          setDies([]);
+          setSpatial(undefined);
+          setFetchError({ message: e.message || 'Unknown error', url: e.url || 'API' });
+        }
+        return;
+      }
+
+      const optional = await Promise.allSettled([
+        fetchJson(`/v1/analytics/wafers/${selectedWaferId}/tests`),
+        fetchJson(`/v1/analytics/wafers/${selectedWaferId}/summary`),
+        fetchJson(`/v1/analytics/wafers/${selectedWaferId}/sites`),
+        fetchJson(`/v1/analytics/wafers/${selectedWaferId}/retests`),
+        fetchJson('/v1/analytics/conclusions')
+      ]);
+      if (cancelled) return;
+      const [testsResult, summaryResult, sitesResult, retestsResult, conclusionsResult] = optional;
+      if (testsResult.status === 'fulfilled') setTests(testsResult.value);
+      if (summaryResult.status === 'fulfilled') setSummary(summaryResult.value);
+      if (sitesResult.status === 'fulfilled') setSites(sitesResult.value);
+      if (retestsResult.status === 'fulfilled') setRetests(retestsResult.value);
+      if (conclusionsResult.status === 'fulfilled') {
+        setConclusions(conclusionsResult.value.filter((x: Conclusion) => x.affected_wafer === selectedWaferId));
       }
     };
 
     fetchWaferData();
+    return () => { cancelled = true; };
   }, [selectedWaferId]);
 
   const selectDie = async (d: Die) => {

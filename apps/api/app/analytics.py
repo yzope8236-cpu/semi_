@@ -45,7 +45,7 @@ def wafer_tests(wafer_id: str):
     wafer = rows("SELECT wafer_id FROM wafers WHERE wafer_id={w:String} LIMIT 1", {'w':wafer_id})
     if not wafer: raise HTTPException(404, 'Wafer not found')
     return rows("""
-        SELECT t.test_num, t.test_name, max(t.original_unit) units, count() observation_count, sum(t.passed=0) fail_count,
+        SELECT t.test_num, t.test_name, max(t.normalized_unit) units, count() observation_count, sum(t.passed=0) fail_count,
         round(sum(t.passed=0)*100/count(),2) failure_rate, avg(t.measured_value) average_value, min(t.measured_value) minimum_value,
         max(t.measured_value) maximum_value, any(t.lower_limit) lower_limit, any(t.upper_limit) upper_limit
         FROM test_results t INNER JOIN devices d USING (device_id, wafer_id)

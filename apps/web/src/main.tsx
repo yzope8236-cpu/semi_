@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Sidebar } from './components/Sidebar';
 import MissionControl from './pages/MissionControl';
+import IngestData from './pages/IngestData';
 import WaferExplorer from './pages/WaferExplorer';
 import FailureIntelligence from './pages/FailureIntelligence';
 import YieldTrends from './pages/YieldTrends';
@@ -39,6 +40,8 @@ function App() {
 
   const renderPage = () => {
     switch (page) {
+      case 'Ingest Data':
+        return <IngestData notify={notify} setPage={setPage} />;
       case 'Mission Control':
         return <MissionControl setPage={setPage} setWaferId={handleNavigateWithWafer} />;
       case 'Wafer Explorer':

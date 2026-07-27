@@ -1,6 +1,7 @@
 import React from 'react';
 
 export const nav = [
+  'Ingest Data',
   'Mission Control',
   'Wafer Explorer',
   'Failure Intelligence',

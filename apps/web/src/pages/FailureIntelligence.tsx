@@ -40,16 +40,18 @@ export default function FailureIntelligence({ setPage, initialWaferId }: Props) 
     if (!selectedWafer) return;
     const loadData = async () => {
       try {
-        const [c, t, s, sum] = await Promise.all([
+        // A failed secondary insight must not blank the entire failure screen.
+        const settled = await Promise.allSettled([
           get<Conclusion[]>('v1/analytics/conclusions'),
           get<any[]>(`v1/analytics/wafers/${selectedWafer}/tests`),
           get<any[]>(`v1/analytics/wafers/${selectedWafer}/sites`),
           get<WaferSummary>(`v1/analytics/wafers/${selectedWafer}/summary`)
         ]);
-        setConclusions(c.filter(x => x.affected_wafer === selectedWafer && (x.category === 'test' || x.category === 'bin' || x.category === 'site')));
-        setTests(t);
-        setSites(s);
-        setSummary(sum);
+        const [conclusionResult, testResult, siteResult, summaryResult] = settled;
+        if (conclusionResult.status === 'fulfilled') setConclusions(conclusionResult.value.filter(x => x.affected_wafer === selectedWafer && (x.category === 'test' || x.category === 'bin' || x.category === 'site')));
+        if (testResult.status === 'fulfilled') setTests(testResult.value);
+        if (siteResult.status === 'fulfilled') setSites(siteResult.value);
+        if (summaryResult.status === 'fulfilled') setSummary(summaryResult.value);
       } catch (e) {
         console.error(e);
       }

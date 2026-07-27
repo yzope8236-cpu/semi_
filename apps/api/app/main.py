@@ -7,6 +7,7 @@ import gzip, io, tarfile, zipfile
 from .config import settings
 from .parsers import parse_atdf
 from .stdf_parser import parse_stdf
+from .csv_parser import parse_csv
 from .db import client, rows, scalar
 from .analytics import router as analytics_router
 
@@ -50,6 +51,7 @@ def ingest(name: str, data: bytes):
     if scalar('SELECT count() FROM ingest_files WHERE sha256={hash:String}', {'hash':digest}): return {'status':'duplicate','sha256':digest}
     payload_name, payload=unpack_payload(name,data)
     
+    is_csv = payload_name.lower().endswith('.csv')
     is_atdf_text = b'FAR:' in payload[:512] or b'# AT' in payload[:512] or b'\nFAR' in payload[:512]
     
     is_binary_stdf = False
@@ -62,12 +64,16 @@ def ingest(name: str, data: bytes):
         parsed = parse_stdf(payload, payload_name)
         source_format = "STDF"
         parser_ver = "stdf-parser/0.1"
+    elif is_csv:
+        parsed = parse_csv(payload)
+        source_format = "CSV"
+        parser_ver = "csv-canonical/1"
     elif is_atdf_text:
         parsed = parse_atdf(payload.decode('utf-8',errors='replace'))
         source_format = "ATDF"
         parser_ver = "atdf-parser/0.2"
     else:
-        raise HTTPException(422, 'Unrecognized file format; must be valid ATDF or binary STDF V4.')
+        raise HTTPException(422, 'Unrecognized file format; supported inputs are canonical CSV, ATDF, or binary STDF V4.')
 
     fid=uuid4(); now=datetime.now(timezone.utc)
     c.insert('ingest_files', [[fid,digest,name,source_format,'validated' if not any(x.severity=='error' for x in parsed.findings) else 'requires_review',now,parser_ver,'default/1',name,parsed.tester_id,parsed.firmware_version,parsed.lot_id,parsed.part_id,parsed.program_name,parsed.records,len(parsed.findings),[f.code for f in parsed.findings]]], column_names=['file_id','sha256','file_name','source_format','status','received_at','parser_version','mapping_version','source_uri','tester_id','firmware_version','lot_id','part_id','program_name','records_parsed','error_count','warnings'])

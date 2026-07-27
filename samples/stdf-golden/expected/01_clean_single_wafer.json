@@ -1,0 +1,41 @@
+{
+  "file_name": "01_clean_single_wafer.stdf",
+  "stdf_version": 4,
+  "lot_id": "SYN-LOT-01",
+  "part_id": "SYN-PART-1",
+  "tester_id": "SYN-TESTER",
+  "wafer_id": "WAF-01",
+  "device_count": 16,
+  "pass_count": 14,
+  "fail_count": 2,
+  "yield_pct": 87.5,
+  "test_names": [
+    "IDDQ",
+    "VTH"
+  ],
+  "site_numbers": [
+    1
+  ],
+  "hardware_bin_counts": {
+    "1": 14,
+    "10": 2
+  },
+  "software_bin_counts": {
+    "1": 14,
+    "10": 2
+  },
+  "required_record_types": [
+    "FAR",
+    "MIR",
+    "WIR",
+    "PIR",
+    "PTR",
+    "PRR",
+    "WRR",
+    "MRR"
+  ],
+  "optional_record_types_written": [],
+  "expected_spatial_pattern": "random",
+  "expected_retest_devices": 0,
+  "parser_fixture_status": "synthetic_stdf_v4"
+}

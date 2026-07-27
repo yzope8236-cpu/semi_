@@ -1,0 +1,46 @@
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    environment:
+      CLICKHOUSE_DB: yieldscope
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-yieldscope}
+    ports: ["8123:8123", "9000:9000"]
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./clickhouse/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client --user ${CLICKHOUSE_USER:-default} --password ${CLICKHOUSE_PASSWORD:-yieldscope} --query 'SELECT 1'"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  api:
+    build: ./apps/api
+    environment:
+      CLICKHOUSE_HOST: clickhouse
+      CLICKHOUSE_PORT: 8123
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-yieldscope}
+      API_KEY: ${API_KEY:-change-me-for-production}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:8080}
+    ports: ["8000:8000"]
+    depends_on:
+      clickhouse: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 4s
+      retries: 10
+  gateway:
+    build: ./apps/gateway
+    environment:
+      ANALYTICS_API_URL: http://api:8000
+    ports: ["8080:8080"]
+    depends_on:
+      api: { condition: service_healthy }
+  web:
+    build: ./apps/web
+    ports: ["5173:80"]
+    depends_on: [gateway]
+volumes:
+  clickhouse_data:

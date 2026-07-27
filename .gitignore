@@ -1,0 +1,27 @@
+.env
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules/
+coverage/
+dist/
+.idea/
+.vscode/
+*.iml
+
+*.tsbuildinfo
+
+# Data and STDF rules
+data/external/
+data/raw/
+*.stdf
+*.std
+*.atdf
+
+!samples/stdf-golden/
+!samples/stdf-golden/*.stdf
+!samples/stdf-golden/expected/
+!samples/stdf-golden/expected/*.json
+
+# Java build output
+target/

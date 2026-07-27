@@ -1,0 +1,2 @@
+Semi-ATE-STDF==0.1.28
+pytest

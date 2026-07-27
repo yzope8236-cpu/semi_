@@ -1,0 +1,39 @@
+{
+  "file_name": "03_retest_devices.stdf",
+  "stdf_version": 4,
+  "lot_id": "SYN-LOT-03",
+  "part_id": "SYN-PART-3",
+  "tester_id": "SYN-TESTER",
+  "wafer_id": "WAF-03",
+  "device_count": 3,
+  "final_device_count": 2,
+  "pass_count": 2,
+  "fail_count": 0,
+  "yield_pct": 100.0,
+  "test_names": [
+    "IDDQ"
+  ],
+  "site_numbers": [
+    1
+  ],
+  "hardware_bin_counts": {
+    "1": 2
+  },
+  "software_bin_counts": {
+    "1": 2
+  },
+  "required_record_types": [
+    "FAR",
+    "MIR",
+    "WIR",
+    "PIR",
+    "PTR",
+    "PRR",
+    "WRR",
+    "MRR"
+  ],
+  "optional_record_types_written": [],
+  "expected_spatial_pattern": "random",
+  "expected_retest_devices": 1,
+  "parser_fixture_status": "synthetic_stdf_v4"
+}
